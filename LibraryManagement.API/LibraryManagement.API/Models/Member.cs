@@ -14,6 +14,9 @@
 
         public DateTime MembershipDate { get; set; } = DateTime.Now;
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } = true;       
+
+        // ✍️ Saved once — auto-loaded on attendance
+        public string? SavedSignature { get; set; }  // base64 PNG string
     }
 }

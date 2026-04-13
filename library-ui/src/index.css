@@ -1,2 +1,48 @@
 
 @import "tailwindcss";
+@media print {
+  body {
+    background: white;
+    padding: 0;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .show-print {
+    display: block !important;
+  }
+  .hidden-screen {
+    display: block;
+  }
+  .print-container {
+    padding: 20mm;
+    width: 210mm; /* A4 Width */
+    margin: 0 auto;
+  }
+  table {
+    width: 100%;
+    border: 1px solid black !important;
+  }
+  th, td {
+    border: 1px solid black !important;
+  }
+}
+
+/* Screen adjustments */
+.hidden-screen {
+  display: none;
+}
+@media print {
+  body { background: white !important; padding: 0 !important; }
+  .no-print { display: none !important; }
+  .show-print { display: block !important; }
+  .print-area {
+    padding: 20mm;
+    width: 210mm; /* A4 Standard */
+    margin: 0 auto;
+  }
+  table { border: 1px solid black !important; }
+  th, td { border: 1px solid black !important; color: black !important; }
+}
+
+.show-print { display: none; }

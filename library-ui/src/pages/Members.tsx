@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { Users, UserPlus, Edit3, Trash2, Search, X, Loader2, CheckCircle } from "lucide-react";
 import api from "../services/api";
 import axios, { AxiosError } from "axios";
+import SignatureCanvas from "react-signature-canvas";
 
 interface Member {
   id: number;
@@ -37,6 +38,8 @@ export default function Members() {
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<MemberForm>(emptyForm);
+  const sigRef = useRef<SignatureCanvas | null>(null);
+  const [signature, setSignature] = useState<string | null>(null);
 
   const fetchMembers = async () => {
     const res = await api.get<Member[]>("/members");
@@ -62,7 +65,25 @@ export default function Members() {
     if (!editingMember || formData.password) {
       payload.Password = formData.password;
     }
+ let memberId = editingMember?.id;
 
+  if (editingMember) {
+    await api.put(`/members/${editingMember.id}`, payload);
+  } else {
+    const res = await api.post("/members", payload);
+    memberId = res.data.id; // 👈 get new ID
+  }
+
+  // ✅ SAVE SIGNATURE
+  if (signature && memberId) {
+    await api.patch(`/members/${memberId}/signature`, signature);
+  }
+
+  setIsModalOpen(false);
+  setEditingMember(null);
+  setFormData(emptyForm);
+  setSignature(null); // reset
+  fetchMembers();
     try {
       if (editingMember) {
         await api.put(`/members/${editingMember.id}`, payload);
@@ -102,6 +123,12 @@ export default function Members() {
       fetchMembers();
     }
   };
+  api.get(`/members/${editingMember?.id}/signature`)
+  .then(res => {
+    if (res.data.hasSavedSignature) {
+      setSignature(res.data.signature);
+    }
+  });
 
   const openEditModal = (member: Member) => {
     setEditingMember(member);
@@ -210,7 +237,17 @@ export default function Members() {
             <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
               <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                 <h3 className="text-xl font-black text-slate-800">{editingMember ? "Edit Member" : "New Member"}</h3>
-                <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
+                <button
+  onClick={() => {
+    setIsModalOpen(false);
+    setSignature(null);     // ✅ reset signature
+    setEditingMember(null); // optional clean
+    setFormData(emptyForm); // optional clean
+  }}
+  className="text-slate-400 hover:text-slate-600"
+>
+  <X size={24} />
+</button>
               </div>
 
               {/* ✅ Scrollable form so all fields visible on small screens */}
@@ -279,6 +316,74 @@ export default function Members() {
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
+
+                <div className="space-y-2">
+  <label className="text-xs font-bold text-slate-500 uppercase">
+    स्वाक्षरी (Draw / Upload)
+  </label>
+
+  {/* DRAW PAD */}
+  <div className="border rounded-xl bg-white p-2">
+    <SignatureCanvas
+      ref={sigRef}
+      penColor="black"
+      canvasProps={{
+        width: 300,
+        height: 120,
+        className: "border rounded"
+      }}
+    />
+  </div>
+
+  {/* BUTTONS */}
+  <div className="flex gap-2">
+    <button
+      type="button"
+      onClick={() => {
+        const data = sigRef.current?.toDataURL();
+        if (data) setSignature(data);
+      }}
+      className="bg-green-600 text-white px-3 py-1 rounded"
+    >
+      Save Sign
+    </button>
+
+    <button
+      type="button"
+      onClick={() => {
+        sigRef.current?.clear();
+        setSignature(null);
+      }}
+      className="bg-gray-500 text-white px-3 py-1 rounded"
+    >
+      Clear
+    </button>
+  </div>
+
+  {/* UPLOAD IMAGE */}
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setSignature(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }}
+    className="w-full text-sm"
+  />
+
+  {/* PREVIEW */}
+  {signature && (
+    <div className="border rounded-xl p-2 bg-slate-50">
+      <img src={signature} className="h-20 object-contain" />
+    </div>
+  )}
+</div>
 
                 <div className="flex items-center gap-3 py-2">
                   <input

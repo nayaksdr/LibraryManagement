@@ -4,6 +4,7 @@ using LibraryManagement.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryManagement.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260411100144_AddAttendanceSheet")]
+    partial class AddAttendanceSheet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,7 +89,7 @@ namespace LibraryManagement.API.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("AttendanceDate")
+                    b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("MemberId")
@@ -145,49 +148,6 @@ namespace LibraryManagement.API.Migrations
                     b.ToTable("Members");
                 });
 
-            modelBuilder.Entity("LibraryManagement.API.Models.MemberAttendance", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("AttendanceDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("MemberId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PhotoBase64")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PhotoBgRemovedBase64")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Remark")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SignatureSnapshot")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MemberId");
-
-                    b.ToTable("MemberAttendances");
-                });
-
             modelBuilder.Entity("LibraryManagement.API.Models.Newspaper", b =>
                 {
                     b.Property<int>("Id")
@@ -195,6 +155,9 @@ namespace LibraryManagement.API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
@@ -224,18 +187,29 @@ namespace LibraryManagement.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("AttendanceDate")
+                    b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("NewspaperId")
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LibrarianSignature")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MemberId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Remark")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("NewspaperId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Signature")
                         .IsRequired()
@@ -247,10 +221,9 @@ namespace LibraryManagement.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("NewspaperId");
+                    b.HasIndex("MemberId");
 
-                    b.HasIndex("AttendanceDate", "NewspaperId")
-                        .IsUnique();
+                    b.HasIndex("NewspaperId");
 
                     b.ToTable("NewspaperAttendances");
                 });
@@ -354,7 +327,7 @@ namespace LibraryManagement.API.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("LibraryManagement.API.Models.MemberAttendance", b =>
+            modelBuilder.Entity("LibraryManagement.API.Models.NewspaperAttendance", b =>
                 {
                     b.HasOne("LibraryManagement.API.Models.Member", "Member")
                         .WithMany()
@@ -362,16 +335,13 @@ namespace LibraryManagement.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Member");
-                });
-
-            modelBuilder.Entity("LibraryManagement.API.Models.NewspaperAttendance", b =>
-                {
                     b.HasOne("LibraryManagement.API.Models.Newspaper", "Newspaper")
-                        .WithMany("Attendances")
+                        .WithMany()
                         .HasForeignKey("NewspaperId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Member");
 
                     b.Navigation("Newspaper");
                 });
@@ -403,11 +373,6 @@ namespace LibraryManagement.API.Migrations
                     b.Navigation("Member");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("LibraryManagement.API.Models.Newspaper", b =>
-                {
-                    b.Navigation("Attendances");
                 });
 #pragma warning restore 612, 618
         }

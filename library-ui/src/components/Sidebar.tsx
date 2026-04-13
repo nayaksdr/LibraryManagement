@@ -17,6 +17,8 @@ export default function Sidebar() {
     { to: "/members", label: "सभासद", icon: <Users size={20} /> },
     {to: "/book-category", label: "पुस्तक वर्गीकरण", icon: <BookOpen size={20} /> },
     { to: "/books", label: "पुस्तके", icon: <BookOpen size={20} /> },
+    {to: "/newspaper-attendance", label: "वाचनालय हजेरी", icon: <BookOpen size={20} />},
+    {to: "/member-attendance", label: "सभासद हजेरी", icon: <Users size={20} />},   
     { to: "/issue", label: "पुस्तक वाटप", icon: <ArrowUpRight size={20} /> },
     { to: "/return", label: "पुस्तक जमा", icon: <ArrowDownLeft size={20} /> },
     { to: "/transactions", label: "व्यवहार इतिहास", icon: <History size={20} /> },
@@ -74,7 +76,7 @@ export default function Sidebar() {
         <button 
           onClick={() => {
             localStorage.removeItem("token");
-            window.location.href = "/login";
+            window.location.href = "/";
           }}
           className="flex items-center gap-4 w-full px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-rose-400/10 rounded-2xl transition-all group"
         >
